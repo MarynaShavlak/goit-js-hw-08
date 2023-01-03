@@ -2,6 +2,11 @@ import storageAPI from './storage';
 import throttle from 'lodash.throttle';
 
 const feedbackFormEl = document.querySelector('.feedback-form');
+const feedbackFormEmailEl = document.querySelector('[name="email"]');
+const feedbackFormMessageEl = document.querySelector('[name="message"]');
+
+feedbackFormEmailEl.required = true;
+feedbackFormMessageEl.required = true;
 
 const STORAGE_KEY = 'feedback-form-state';
 
