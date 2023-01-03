@@ -1,49 +1,47 @@
+import storageAPI from './storage';
 import throttle from 'lodash.throttle';
 
 const feedbackFormEl = document.querySelector('.feedback-form');
-const userInfo = {};
+
 const STORAGE_KEY = 'feedback-form-state';
 
-fillFeedbackFormFields();
+populateFormFields();
 
-feedbackFormEl.addEventListener(
-  'input',
-  throttle(onFeedbackFormFieldChange, 500)
-);
+feedbackFormEl.addEventListener('input', throttle(onFormFieldChange, 500));
 
-feedbackFormEl.addEventListener('submit', onFeedbackFormSubmit);
+feedbackFormEl.addEventListener('submit', onFormSubmit);
 
-function onFeedbackFormFieldChange(e) {
-  const { target } = e;
+function onFormFieldChange(e) {
+  const { name, value } = e.target;
 
-  const name = target.name;
-  const value = target.value;
-
+  const userInfo = storageAPI.load(STORAGE_KEY) ?? {};
   userInfo[name] = value;
 
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(userInfo));
+  storageAPI.save(STORAGE_KEY, userInfo);
 }
 
-function onFeedbackFormSubmit(event) {
-  console.log(userInfo);
+function onFormSubmit(event) {
   event.preventDefault();
+  const userData = {};
+  const formData = new FormData(event.currentTarget);
 
+  formData.forEach((value, name) => {
+    userData[name] = value;
+  });
+
+  console.log(userData);
+  storageAPI.remove(STORAGE_KEY);
   feedbackFormEl.reset();
-  localStorage.removeItem(STORAGE_KEY);
 }
 
-function fillFeedbackFormFields() {
-  try {
-    const userInfoFromLS = JSON.parse(localStorage.getItem(STORAGE_KEY));
+function populateFormFields() {
+  const saveData = storageAPI.load(STORAGE_KEY);
 
-    if (userInfoFromLS === null) {
-      return;
-    }
-
-    for (const prop in userInfoFromLS) {
-      feedbackFormEl.elements[prop].value = userInfoFromLS[prop];
-    }
-  } catch (err) {
-    console.log(err);
+  if (!saveData) {
+    return;
   }
+
+  Object.entries(saveData).forEach(([name, value]) => {
+    feedbackFormEl.elements[name].value = value;
+  });
 }
